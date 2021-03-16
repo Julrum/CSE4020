@@ -113,20 +113,7 @@ def main():
     while not glfw.window_should_close(window):
         glfw.poll_events()
 
-        th = np.radians(60)
-        R = np.array([[np.cos(th), -np.sin(th),0.],
-                      [np.sin(th), np.cos(th),0.],
-                      [0.,        0.,         1,]])
-
-        T = np.array([[1.,0.,.4],
-                      [0.,1.,.1],
-                      [0.,0.,1.]])
-
-        # render(R)
-        # render(T)
         render(gComposedM)
-        # render(R @ T)
-
 
         glfw.swap_buffers(window)
 
