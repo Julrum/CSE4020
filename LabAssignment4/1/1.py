@@ -1,6 +1,5 @@
 import glfw
 from OpenGL.GL import *
-from OpenGL.GLU import *
 import numpy as np
 
 glList = []
