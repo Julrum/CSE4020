@@ -3,11 +3,12 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 import numpy as np
 
-gXAng = 0.
-gYAng = 0.
+gProjection = 0
+gXAng = -35.
+gYAng = 45.
 gXTrans = 0.
 gYTrans = 0.
-gZTrans = 0.
+gZTrans = 5.
 cx = 0.
 cy = 0.
 lAx = 0.
@@ -29,7 +30,7 @@ def drawGridArray():
   for i in range(-20, 20):
     for j in range(-20, 20):
       glPushMatrix()
-      glTranslatef(i,0, j)
+      glTranslatef(i*2,0, j*2)
       drawGrid()
       glPopMatrix()
 
@@ -47,19 +48,21 @@ def drawFrame():
   glEnd()
 
 def render():
-  global gXAng, gYAng, gXTrans, gYTrans, gZTrans
+  global gProjection ,gXAng, gYAng, gXTrans, gYTrans, gZTrans
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
   glEnable(GL_DEPTH_TEST)
   glPolygonMode( GL_FRONT_AND_BACK, GL_LINE )
 
   glLoadIdentity()
 
-  # test other parameter values
-  glOrtho(-10,10, -10,10, -10,10)
+  if gProjection==1:
+    glOrtho(-gZTrans,gZTrans, -gZTrans,gZTrans, -100,100)
+  else:
+    gluPerspective(120, 1, 1, 100)
 
-  glRotatef(gXAng, 1, 0, 0)
-  glRotatef(gYAng, 0, 1, 0)
-  glTranslatef(gXTrans, gYTrans, gZTrans)
+  glTranslatef(gXTrans, gYTrans, -gZTrans)
+  glRotatef(-gXAng, 1, 0, 0)
+  glRotatef(-gYAng, 0, 1, 0)
   drawFrame()
   glColor3ub(255, 255, 255)
 
@@ -78,33 +81,32 @@ def cursor_callback(window, xpos, ypos):
   elif rightButton == 1:
     dx = cx - xpos
     dy = cy - ypos
-    gXTrans = lTx + dx*0.0416
+    gXTrans = lTx - dx*0.0416
     gYTrans = lTy + dy*0.0416
   
 def button_callback(window, button, action, mod):
-  global gXAng, gYAng, gXTrans, gYTrans, leftButton, rightButton, lAx, lAy, lTx, lTy, dx, dy
+  global gXAng, gYAng, gXTrans, gYTrans, leftButton, rightButton, lAx, lAy, lTx, lTy
   if button==glfw.MOUSE_BUTTON_LEFT:
+    lAx = gYAng
+    lAy = gXAng
     if action==glfw.PRESS:
       leftButton = 1
     elif action==glfw.RELEASE:
       leftButton = 0
-      lAx = gYAng
-      lAy = gXAng
   if button==glfw.MOUSE_BUTTON_RIGHT:
+    lTx = gXTrans
+    lTy = gYTrans
     if action==glfw.PRESS:
       rightButton = 1
     elif action==glfw.RELEASE:
       rightButton = 0
-      lTx = gXTrans
-      lTy = gYTrans
 
 def scroll_callback(window, xoffset, yoffset):
-  global gXTrans, gYTrans, gZTrans
+  global gZTrans
   gZTrans += yoffset
-  print('mouse wheel scroll: %f, %f, %f'%(gXTrans, gYTrans, gZTrans))
 
 def key_callback(window, key, scancode, action, mods):
-  global gXAng, gYAng, gZAng
+  global gProjection, gXAng, gYAng, gZAng
   if action==glfw.PRESS or action==glfw.REPEAT:
     if key==glfw.KEY_1:
       gXAng += 10
@@ -113,9 +115,14 @@ def key_callback(window, key, scancode, action, mods):
     elif key==glfw.KEY_2:
       gYAng += 10
     elif key==glfw.KEY_W:
-      gYAng = 0
-      gXAng = 0
-      gZAng = 0
+      gYAng = 0.
+      gXAng = 0.
+      gZAng = 0.
+    elif key==glfw.KEY_V:
+      if gProjection==0:
+        gProjection = 1
+      else:
+        gProjection = 0
 
 def main():
   if not glfw.init():
