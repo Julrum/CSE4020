@@ -108,16 +108,6 @@ def scroll_callback(window, xoffset, yoffset):
 def key_callback(window, key, scancode, action, mods):
   global gProjection, gXAng, gYAng, gZAng
   if action==glfw.PRESS or action==glfw.REPEAT:
-    if key==glfw.KEY_1:
-      gXAng += 10
-    elif key==glfw.KEY_3:
-      gZAng += 10
-    elif key==glfw.KEY_2:
-      gYAng += 10
-    elif key==glfw.KEY_W:
-      gYAng = 0.
-      gXAng = 0.
-      gZAng = 0.
     elif key==glfw.KEY_V:
       if gProjection==0:
         gProjection = 1
