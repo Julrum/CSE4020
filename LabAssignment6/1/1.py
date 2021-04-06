@@ -84,7 +84,7 @@ def myFrustum(left, right, bottom, top, near, far):
   glMultMatrixf(M.T)
 
 def myLookAt(eye, at, up):
-  w=eye/np.sqrt(np.dot(eye, eye))
+  w=(eye-at)/np.sqrt(np.dot(eye-at, eye-at))
   u=np.cross(up, w)/np.sqrt(np.dot(np.cross(up, w), np.cross(up, w)))
   v=np.cross(w, u)
   R=np.identity(4)
