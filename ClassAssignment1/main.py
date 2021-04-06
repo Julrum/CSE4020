@@ -6,45 +6,45 @@ import numpy as np
 gProjection = 0
 gXAng = -35.
 gYAng = 45.
-gXTrans = 0.
-gYTrans = 0.
+gXTrans = gYTrans = 0.
 gZTrans = 5.
-cx = 0.
-cy = 0.
-lAx = 0.
-lAy = 0.
-lTx = 0.
-lTy = 0.
-leftButton = 0
-rightButton = 0
+cx = cy = 0.
+lAx = lAy = lTx = lTy = 0.
+leftButton = rightButton = 0
 
-def drawGrid():
+def drawXGrid():
   glBegin(GL_LINES)
-  glVertex3f( 0., 0., 0.)
-  glVertex3f(20., 0., 0.)
-  glVertex3f( 0., 0., 0.)
-  glVertex3f( 0., 0.,20.)
+  glVertex3f(-10., 0., 0.)
+  glVertex3f(10., 0., 0.)
   glEnd()
   
+def drawYGrid():
+  glBegin(GL_LINES)
+  glVertex3f(0., 0., -10.)
+  glVertex3f(0., 0., 10.)
+  glEnd()
+
 def drawGridArray():
-  for i in range(-20, 20):
-    for j in range(-20, 20):
+  for i in range(-10, 11):
+    for j in range(-10, 11):
       glPushMatrix()
-      glTranslatef(i*2,0, j*2)
-      drawGrid()
+      glTranslatef(i, 0, 0)
+      drawYGrid()
+      glTranslatef(-i, 0, j)
+      drawXGrid()
       glPopMatrix()
 
 def drawFrame():
   glBegin(GL_LINES)
   glColor3ub(255, 0, 0)
   glVertex3f( 0.,0.,0.)
-  glVertex3f(20.,0.,0.)
+  glVertex3f(10.,0.,0.)
   glColor3ub(0, 255, 0)
   glVertex3f(0.,0.,0.)
-  glVertex3f(0.,20.,0.)
+  glVertex3f(0.,10.,0.)
   glColor3ub(0, 0, 255)
   glVertex3f(0.,0.,0)
-  glVertex3f(0.,0.,20.)
+  glVertex3f(0.,0.,10.)
   glEnd()
 
 def render():
@@ -106,9 +106,9 @@ def scroll_callback(window, xoffset, yoffset):
   gZTrans += yoffset
 
 def key_callback(window, key, scancode, action, mods):
-  global gProjection, gXAng, gYAng, gZAng
+  global gProjection
   if action==glfw.PRESS or action==glfw.REPEAT:
-    elif key==glfw.KEY_V:
+    if key==glfw.KEY_V:
       if gProjection==0:
         gProjection = 1
       else:
@@ -117,7 +117,7 @@ def key_callback(window, key, scancode, action, mods):
 def main():
   if not glfw.init():
     return
-  window = glfw.create_window(480,480,'title', None,None)
+  window = glfw.create_window(960,960,'Viewer', None,None)
   if not window:
     glfw.terminate()
     return
