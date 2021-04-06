@@ -3,14 +3,14 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 import numpy as np
 
-gProjection = 0
+isPerspective = True
 gXAng = -35.
 gYAng = 45.
 gXTrans = gYTrans = 0.
 gZTrans = 5.
 cx = cy = 0.
 lAx = lAy = lTx = lTy = 0.
-leftButton = rightButton = 0
+leftButton = rightButton = False
 
 def drawXGrid():
   glBegin(GL_LINES)
@@ -48,17 +48,17 @@ def drawFrame():
   glEnd()
 
 def render():
-  global gProjection ,gXAng, gYAng, gXTrans, gYTrans, gZTrans
+  global isPerspective ,gXAng, gYAng, gXTrans, gYTrans, gZTrans
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
   glEnable(GL_DEPTH_TEST)
   glPolygonMode( GL_FRONT_AND_BACK, GL_LINE )
 
   glLoadIdentity()
 
-  if gProjection==1:
-    glOrtho(-gZTrans,gZTrans, -gZTrans,gZTrans, -100,100)
-  else:
+  if isPerspective:
     gluPerspective(120, 1, 1, 100)
+  else:
+    glOrtho(-gZTrans,gZTrans, -gZTrans,gZTrans, -100,100)
 
   glTranslatef(gXTrans, gYTrans, -gZTrans)
   glRotatef(-gXAng, 1, 0, 0)
@@ -70,15 +70,15 @@ def render():
 
 def cursor_callback(window, xpos, ypos):
   global gXAng, gYAng, cx, cy, lAx, lAy, lTx, lTy, leftButton, rightButton, gXTrans, gYTrans
-  if leftButton == 0 and rightButton == 0:
+  if leftButton==False and rightButton==False:
     cx = xpos
     cy = ypos
-  elif leftButton == 1:
+  elif leftButton:
     dx = cx - xpos
     dy = cy - ypos
     gYAng = lAx + dx
     gXAng = lAy + dy
-  elif rightButton == 1:
+  elif rightButton:
     dx = cx - xpos
     dy = cy - ypos
     gXTrans = lTx - dx*0.0416
@@ -90,29 +90,29 @@ def button_callback(window, button, action, mod):
     lAx = gYAng
     lAy = gXAng
     if action==glfw.PRESS:
-      leftButton = 1
+      leftButton=True
     elif action==glfw.RELEASE:
-      leftButton = 0
+      leftButton=False
   if button==glfw.MOUSE_BUTTON_RIGHT:
     lTx = gXTrans
     lTy = gYTrans
     if action==glfw.PRESS:
-      rightButton = 1
+      rightButton=True
     elif action==glfw.RELEASE:
-      rightButton = 0
+      rightButton=False
 
 def scroll_callback(window, xoffset, yoffset):
   global gZTrans
   gZTrans += yoffset
 
 def key_callback(window, key, scancode, action, mods):
-  global gProjection
+  global isPerspective
   if action==glfw.PRESS or action==glfw.REPEAT:
     if key==glfw.KEY_V:
-      if gProjection==0:
-        gProjection = 1
+      if isPerspective:
+        isPerspective=False
       else:
-        gProjection = 0
+        isPerspective=True
 
 def main():
   if not glfw.init():
