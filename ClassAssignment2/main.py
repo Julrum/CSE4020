@@ -95,6 +95,9 @@ def sunRender():
   global num, sunArray, sunArrayForced
   if num!=4:
     obj_loader('./sun.obj')
+    print()
+    print('This file is very large.')
+    print('It takes a long time to run.')
     sunArray, sunArrayForced = createVertexArraySeparate()
     num+=1
   draw_glDrawArrays(sunArray, sunArrayForced)
@@ -119,6 +122,7 @@ def astronautRender():
 def obj_loader(path):
   global gPath, vertexArray, normalArray, faceArray, indexArray, gVertexArraySeparate, gVertexArraySeparateForced, numOf3, numOf4, numOfM, numV, isHierarchical
   numOf3 = numOf4 = numOfM = 0
+  numV=[]
   if path=='None':
     isHierarchical = False
     f = open(gPath, 'r')
@@ -146,34 +150,16 @@ def obj_loader(path):
     elif data[0] == 'f':
       if data[len(data)-1] == '\n':
         data = np.delete(data, len(data)-1, 0)
-      f1 = data[1].split('/')
-      for i in range(len(f1)):
-        if f1[i] == '':
-          f1[i] = -1
-        if len(f1) < 3:
-          f1.append(-1)
-      f2 = data[2].split('/')
-      for i in range(len(f2)):
-        if f2[i] == '':
-          f2[i] = -1
-        if len(f2) < 3:
-          f2.append(-1)
-      f3 = data[3].split('/')
-      for i in range(len(f3)):
-        if f3[i] == '':
-          f3[i] = -1
-        if len(f3) < 3:
-          f3.append(-1)
-      
-      face = np.array([[[int(f1[0])-1, int(f1[1]), int(f1[2])],
-                        [int(f2[0])-1, int(f2[1]), int(f2[2])],
-                        [int(f3[0])-1, int(f3[1]), int(f3[2])]]])
-      faceArray = np.append(faceArray, face, axis=0)
-      numV[int(f1[0])-1].append(len(indexArray)-1)
-      numV[int(f2[0])-1].append(len(indexArray)-1)
-      numV[int(f3[0])-1].append(len(indexArray)-1)
-      index = np.array([[int(f1[0])-1, int(f2[0])-1, int(f3[0])-1]])
-      indexArray = np.append(indexArray, index, axis=0)
+      if len(data) > 4:
+        length = len(data)
+        for i in range(length - 3):
+          tmp = ['f']
+          tmp.append(data[1])
+          tmp.append(data[2+i])
+          tmp.append(data[3+i])
+          fParser(tmp)
+
+      fParser(data)
 
       if len(data) == 4:
         numOf3 += 1
@@ -199,6 +185,35 @@ def obj_loader(path):
   print("Number of faces with 4 vertices:", numOf4)
   print("Number of faces with more than 4 vertices:", numOfM)
 
+def fParser(data):
+  global faceArray, indexArray, numOf3, numOf4, numOfM, numV
+  f1 = data[1].split('/')
+  while len(f1) < 3:
+    f1.append(-1)
+  for i in range(len(f1)):
+    if f1[i] == '':
+      f1[i] = -1
+  f2 = data[2].split('/')
+  while len(f2) < 3:
+    f2.append(-1)
+  for i in range(len(f2)):
+    if f2[i] == '':
+      f2[i] = -1
+  f3 = data[3].split('/')
+  while len(f3) < 3:
+    f3.append(-1)
+  for i in range(len(f3)):
+    if f3[i] == '':
+      f3[i] = -1
+  face = np.array([[[int(f1[0])-1, int(f1[1]), int(f1[2])],
+                    [int(f2[0])-1, int(f2[1]), int(f2[2])],
+                    [int(f3[0])-1, int(f3[1]), int(f3[2])]]])
+  faceArray = np.append(faceArray, face, axis=0)
+  numV[int(f1[0])-1].append(len(indexArray)-1)
+  numV[int(f2[0])-1].append(len(indexArray)-1)
+  numV[int(f3[0])-1].append(len(indexArray)-1)
+  index = np.array([[int(f1[0])-1, int(f2[0])-1, int(f3[0])-1]])
+  indexArray = np.append(indexArray, index, axis=0)
 
 def createVertexArraySeparate():
   global gPath, vertexArray, normalArray, faceArray, indexArray, gVertexArraySeparate, gVertexArraySeparateForced, numOf3, numOf4, numOfM, numV
