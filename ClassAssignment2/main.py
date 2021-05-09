@@ -35,6 +35,7 @@ indexArray = np.array([[]])
 numOf3 = 0
 numOf4 = 0
 numOfM = 0
+numV = []
 
 num = 0
 
@@ -116,12 +117,11 @@ def astronautRender():
   
 
 def obj_loader(path):
-  global gPath, vertexArray, normalArray, faceArray, indexArray, gVertexArraySeparate, gVertexArraySeparateForced, numOf3, numOf4, numOfM, isHierarchical
+  global gPath, vertexArray, normalArray, faceArray, indexArray, gVertexArraySeparate, gVertexArraySeparateForced, numOf3, numOf4, numOfM, numV, isHierarchical
   numOf3 = numOf4 = numOfM = 0
   if path=='None':
     isHierarchical = False
     f = open(gPath, 'r')
-    print(isHierarchical)
   else:
     f = open(path, 'r')
   lines = f.readlines()
@@ -139,6 +139,7 @@ def obj_loader(path):
     if data[0] == 'v':
       v = np.array([[float(data[1]), float(data[2]), float(data[3])]])
       vertexArray = np.append(vertexArray, v, axis=0)
+      numV.append([])
     elif data[0] == 'vn':
       vn = np.array([[float(data[1]), float(data[2]), float(data[3])]])
       normalArray = np.append(normalArray, vn, axis=0)
@@ -168,6 +169,9 @@ def obj_loader(path):
                         [int(f2[0])-1, int(f2[1]), int(f2[2])],
                         [int(f3[0])-1, int(f3[1]), int(f3[2])]]])
       faceArray = np.append(faceArray, face, axis=0)
+      numV[int(f1[0])-1].append(len(indexArray)-1)
+      numV[int(f2[0])-1].append(len(indexArray)-1)
+      numV[int(f3[0])-1].append(len(indexArray)-1)
       index = np.array([[int(f1[0])-1, int(f2[0])-1, int(f3[0])-1]])
       indexArray = np.append(indexArray, index, axis=0)
 
@@ -197,10 +201,11 @@ def obj_loader(path):
 
 
 def createVertexArraySeparate():
-  global gPath, vertexArray, normalArray, faceArray, indexArray, gVertexArraySeparate, gVertexArraySeparateForced, numOf3, numOf4, numOfM
+  global gPath, vertexArray, normalArray, faceArray, indexArray, gVertexArraySeparate, gVertexArraySeparateForced, numOf3, numOf4, numOfM, numV
   global isForced
   varr1 = np.array([[0,0,0]], 'float32')
-  varr2 = np.array([[0,0,0]], 'float32')
+  nvArray = np.array([[0,0,0]], 'float32')
+  vnvArray = np.array([[0,0,0]], 'float32')
 
   for i in range(len(faceArray)):
     v0 = vertexArray[faceArray[i][0][0]]
@@ -209,22 +214,8 @@ def createVertexArraySeparate():
     vec1 = v1 - v0
     vec2 = v2 - v0
     n = np.cross(vec1, vec2)
-    n0 = np.nan_to_num(n/np.abs(n))
-
-    varr2 = np.append(varr2, np.array([n0], 'float32'), axis=0)
-    varr2 = np.append(varr2, np.array([v0], 'float32'), axis=0)
-    varr2 = np.append(varr2, np.array([n0], 'float32'), axis=0)
-    varr2 = np.append(varr2, np.array([v1], 'float32'), axis=0)
-    varr2 = np.append(varr2, np.array([n0], 'float32'), axis=0)
-    varr2 = np.append(varr2, np.array([v2], 'float32'), axis=0)
-
-  for i in range(len(faceArray)):
-    v0 = vertexArray[faceArray[i][0][0]]
-    v1 = vertexArray[faceArray[i][1][0]]
-    v2 = vertexArray[faceArray[i][2][0]]
-    vec1 = v1 - v0
-    vec2 = v2 - v0
-    n = np.cross(vec1, vec2)
+    nv = np.array([n], 'float32')
+    nvArray = np.append(nvArray, nv, axis = 0)
     
     if (faceArray[i][0][2] != -1):
       n0 = np.array([normalArray[faceArray[i][0][2]-1]], 'float32')
@@ -245,9 +236,24 @@ def createVertexArraySeparate():
     varr1 = np.append(varr1, np.array([v1], 'float32'), axis=0)
     varr1 = np.append(varr1, n2, axis=0)
     varr1 = np.append(varr1, np.array([v2], 'float32'), axis=0)
-
+  
+  nvArray = np.delete(nvArray, 0, 0)
   varr1 = np.delete(varr1, 0, 0)
-  varr2 = np.delete(varr2, 0, 0)
+  varr2 = np.array(varr1)
+
+  for i in range(len(vertexArray)):
+    sum = np.array([0, 0, 0], 'float32')
+    for j in numV[i]:
+      sum += nvArray[j]
+    sum /= len(numV[i])
+    sum = np.array([sum])
+    vnvArray = np.append(vnvArray, sum, axis=0)
+
+  vnvArray = np.delete(vnvArray, 0, 0)
+  for i in range(len(faceArray)):
+    varr2[i*6+0] = vnvArray[faceArray[i][0][0]]
+    varr2[i*6+2] = vnvArray[faceArray[i][1][0]]
+    varr2[i*6+4] = vnvArray[faceArray[i][2][0]]
   return varr1, varr2
 
 def draw_glDrawArrays(a, b):
