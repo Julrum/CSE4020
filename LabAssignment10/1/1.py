@@ -149,15 +149,16 @@ def render(t):
     current = J3 @ np.array([0.0, 0.0, 0.0, 1.0])
     state = current
     difference = (current - old)
-    future = current + difference
-    v = (current - future) * 10
+    future = current + difference * 10
+    v = (future - current)
+
+    glBegin(GL_LINES)
+    glVertex3fv(current[:-1])
+    glVertex3fv(future[:-1])
+    glEnd()
     
     glPushMatrix()
     glMultMatrixf(J3.T)
-    glBegin(GL_LINES)
-    glVertex3fv(np.array([0., 0., 0.]))
-    glVertex3fv(v[:-1])
-    glEnd()
     glPushMatrix()
     glScalef(0.1, 0.1, 0.1)
     drawFrame()
